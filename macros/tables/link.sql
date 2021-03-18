@@ -30,6 +30,8 @@
 {%- set source_number = loop.index | string -%}
 
 row_rank_{{ source_number }} AS (
+   
+SELECT * FROM (   
     {%- if model.config.materialized == 'vault_insert_by_rank' %}
     SELECT {{ source_cols_with_rank | join(', ') }},
     {%- else %}
@@ -40,7 +42,10 @@ row_rank_{{ source_number }} AS (
                ORDER BY {{ src_ldts }} ASC
            ) AS row_number
     FROM {{ ref(src) }}
-    QUALIFY row_number = 1
+
+) as l
+WHERE row_number = 1
+
     {%- set ns.last_cte = "row_rank_{}".format(source_number) %}
 ),{{ "\n" if not loop.last }}
 {% endfor -%}

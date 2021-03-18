@@ -48,13 +48,17 @@ update_records AS (
 ),
 
 latest_records AS (
+
+SELECT * FROM (    
     SELECT {{ dbtvault.prefix(rank_cols, 'c', alias_target='target') }},
            CASE WHEN RANK()
            OVER (PARTITION BY {{ dbtvault.prefix([src_pk], 'c') }}
            ORDER BY {{ dbtvault.prefix([src_ldts], 'c') }} DESC) = 1
     THEN 'Y' ELSE 'N' END AS latest
     FROM update_records as c
-    QUALIFY latest = 'Y'
+) as s
+WHERE latest = 'Y'
+
 ),
 {%- endif %}
 

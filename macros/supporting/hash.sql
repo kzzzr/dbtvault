@@ -17,7 +17,7 @@
 
 {#- Select hashing algorithm -#}
 {%- if hash == 'MD5' -%}
-    {%- set hash_alg = 'MD5_BINARY' -%}
+    {%- set hash_alg = 'MD5' -%}
     {%- set hash_size = 16 -%}
 {%- elif hash == 'SHA' -%}
     {%- set hash_alg = 'SHA2_BINARY' -%}
@@ -37,7 +37,7 @@
 {#- If single column to hash -#}
 {%- if columns is string -%}
     {%- set column_str = dbtvault.as_constant(columns) -%}
-    {{- "CAST(({}({})) AS BINARY({})) AS {}".format(hash_alg, standardise | replace('[EXPRESSION]', column_str), hash_size, alias) | indent(4) -}}
+    {{- "CAST(({}({})) AS TEXT) AS {}".format(hash_alg, standardise | replace('[EXPRESSION]', column_str), alias) | indent(4) -}}
 
 {#- Else a list of columns to hash -#}
 {%- else -%}
@@ -54,15 +54,15 @@
         {%- do all_null.append(null_placeholder_string) -%}
 
         {%- set column_str = dbtvault.as_constant(column) -%}
-        {{- "\nIFNULL({}, '{}')".format(standardise | replace('[EXPRESSION]', column_str), null_placeholder_string) | indent(4) -}}
+        {{- "\nCOALESCE({}, '{}')".format(standardise | replace('[EXPRESSION]', column_str), null_placeholder_string) | indent(4) -}}
         {{- "," if not loop.last -}}
 
         {%- if loop.last -%}
 
             {% if is_hashdiff %}
-                {{- "\n)) AS BINARY({})) AS {}".format(hash_size, alias) -}}
+                {{- "\n)) AS TEXT) AS {}".format(alias) -}}
             {%- else -%}
-                {{- "\n), '{}')) AS BINARY({})) AS {}".format(all_null | join(""), hash_size, alias) -}}
+                {{- "\n), '{}')) AS TEXT) AS {}".format(all_null | join(""), alias) -}}
             {%- endif -%}
         {%- else -%}
 

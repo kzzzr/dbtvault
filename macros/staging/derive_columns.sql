@@ -31,7 +31,7 @@
             {%- set exclude_columns = exclude_columns + columns[col] -%}
         {% else %}
             {%- set column_str = dbtvault.as_constant(columns[col]) -%}
-            {%- do der_columns.append(column_str ~ " AS " ~ col) -%}
+            {%- do der_columns.append(column_str ~ "::TEXT AS " ~ col) -%}
             {%- do exclude_columns.append(col) -%}
         {% endif %}
 
